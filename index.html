@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Test Sandbox</title></title>
+    <link rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.css">
+</link>
+    <style>
+      main {
+        display: flex;
+        flex-direction: column;
+      }
+
+      #code, #output {
+        width: 50%;
+      }
+
+      #output{
+        border-left: 1px solid lightgray;
+      }
+
+      button {
+        width: 50%;
+        height: 30px;
+        font-size: 1.2rem;
+        background: green;
+        color: white;
+        align-self: center;
+        border: none;
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div style="display: flex; margin-bottom: 1rem;">
+        <div id="code"></div>
+        <div id="output" style="padding: 0 1rem; overflow-y: scroll;"></div>
+      </div>
+      <button onclick="onRun()" id="run">Run</button>
+    </main>
+    <script type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/codemirror.min.js">
+    </script>
+    <script type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.2/mode/javascript/javascript.min.js">
+    </script>
+    <script type="application/javascript">
+      var isRunning = false;
+      var button = document.querySelector('#run');
+      var output = document.querySelector('#output');
+      var editor = CodeMirror(document.querySelector('#code'), {
+        lineNumbers: true,
+        tabSize: 2,
+        mode: 'javascript',
+        value: 'globalThis.console.log("Hello world");'
+      });
+
+      function onRun() {
+        if (isRunning) return;
+
+        isRunning = true;
+        button.style.backgroundColor = 'red';
+        button.innerText = 'Running...';
+
+        const code = editor.getValue();
+        const resp = fetch('/run', {
+          method: 'POST',
+          body: code,
+        })
+        .then(function(res) {
+          if (res.ok) {
+            res.json().then(function(data) {
+              output.innerText = data.output; 
+            }) 
+          }
+        })
+        .finally(function() {
+          isRunning = false;
+          button.style.backgroundColor = 'green';
+          button.innerText = 'Run';
+        })
+
+      }
+    </script>
+  </body>
+</html>
